@@ -2,23 +2,6 @@ function play(url) {
     var audio = new Audio();
     audio.src = url;
     audio.play();
-    // let audio = document.querySelector("#audio");
-    // audio.src=url;
-    // setTimeout(function () {
-    //     audio.play();
-    // }, 3000)
-}
-
-function childVisibleToggle(it) {
-    it.firstChild.style="display:none";
-
-
-}
-function action(target) {
-    document.getElementById("--");
-    it.firstChild.style="display:none";
-
-
 }
 
 
@@ -28,26 +11,27 @@ window.addEventListener('DOMContentLoaded', function(){
         it.addEventListener('click', evt => play(it.getAttribute('audio')));
     });
 
-
-    let elementById = document.getElementById("--");
-    // elementById.after()
-    // elementById.inse
-
-
     let firstLanguages = document.querySelectorAll('.sentence-container>.first-language');
     firstLanguages.forEach(it => {
         let content = (it.textContent||"").trim();
-        content = content.replace(/[\{\}\[\]\/?.,;:|\)*~`!^\-_+<>@\#$%&\\\=\(\'\"]/gi, '');
+        content = content.replace(/[\{\}\[\]\/?.,;:|\)*~`!^\-_+<>@\#$%&\\\=\(\'\"]/gi, ' ');
         // content = content.replace(/[\r\n]/gi, '');
-        content = content.toLowerCase();
-
+        content = content.toLowerCase()+" ";
+        console.log(content)
         let find = {};
         Object.keys(dictionary).forEach(key => {
             if (new RegExp(key+"[ \r\nsly]").test(content)) {
                 console.log(key);
                 find[key] = dictionary[key];
+
+                for (let i = 0; find[key].ref && i < find[key].ref.length; i++) {
+                    let refKey = find[key].ref[i];
+                    if (!find[refKey] && dictionary[refKey]) {
+                        find[refKey] = dictionary[refKey];
+                    }
+                };
             }
-        })
+        });
 
         let parentElement = it.parentElement;
         let findKeys = Object.keys(find);
@@ -110,7 +94,6 @@ window.addEventListener('DOMContentLoaded', function(){
 
     for (let i = 0; i < sentenceContainers.length; i++) {
         var sentenceContainer = sentenceContainers[i];
-        console.log(sentenceContainer);
         var btns = [];
         for (let j = 0; j < sentenceContainer.children.length; j++) {
             var cit = sentenceContainer.children[j];
