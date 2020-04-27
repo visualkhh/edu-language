@@ -1,12 +1,12 @@
 function play(url) {
     var audio = new Audio();
     audio.src = url;
-    // audio.play();
+    audio.play();
     // let audio = document.querySelector("#audio");
     // audio.src=url;
-    setTimeout(function () {
-        audio.play();
-    }, 3000)
+    // setTimeout(function () {
+    //     audio.play();
+    // }, 3000)
 }
 
 function childVisibleToggle(it) {
