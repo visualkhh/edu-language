@@ -1,0 +1,62 @@
+.sentence-container {
+    border: black solid 1px;
+    margin-top: 5px;
+}
+
+.sentence {
+    margin: 5px;
+}
+
+.listen:before {
+    content: "🔈";
+}
+
+.first-language {
+    color: #000000;
+}
+
+.second-language {
+    color: #707070;
+    margin-left: 10px;
+
+}
+
+
+.hide {
+    display: none;
+}
+
+.explain-container {
+    /*margin-left: 10px;*/
+}
+
+.explain.word {
+    margin-left: 15px;
+    margin-top: 5px;
+    color:darkcyan;
+}
+.explain.mean-container {
+    margin-left: 20px;
+}
+.explain.mean-container .type {
+    font-size: 10px;
+    color: #9f9f9f;
+}
+.explain.mean-container .mean {
+    margin-left: 20px;
+    color: #5d5d5d;
+}
+.toggle {
+    margin: 10px 10px;
+    font-size: 20px;
+}
+/*.toggle {*/
+/*}*/
+/*.toggle:after {*/
+/*    content: "👉🏻";*/
+/*}*/
+
+/*.openclose:before {*/
+/*    content: "🔈";*/
+/*}*/
+
