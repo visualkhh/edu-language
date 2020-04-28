@@ -15,31 +15,68 @@ window.addEventListener('DOMContentLoaded', function(){
     firstLanguages.forEach(it => {
         let content = (it.textContent||"").trim();
         content = content.replace(/[\{\}\[\]\/?.,;:|\)*~`!^\-_+<>@\#$%&\\\=\(\'\"]/gi, ' ');
-        // content = content.replace(/[\r\n]/gi, '');
-        content = content.toLowerCase()+" ";
-        console.log(content)
+        content = content.toLowerCase();
+        let contents = content.split(" ");
         let find = {};
-        Object.keys(dictionary).forEach(key => {
-            if (new RegExp(key+"[ \r\nsly]").test(content)) {
-                console.log(key);
-                find[key] = dictionary[key];
 
+        // dictionary
+        contents.forEach(key => {
+            if (dictionary[key]) {
+                find[key] = dictionary[key];
                 for (let i = 0; find[key].ref && i < find[key].ref.length; i++) {
                     let refKey = find[key].ref[i];
                     if (!find[refKey] && dictionary[refKey]) {
                         find[refKey] = dictionary[refKey];
                     }
-                };
+                }
             }
         });
 
+        // idiomDictionary 숙어
+        Object.keys(idiomDictionary).forEach(key => {
+            if (new RegExp(key+"[ \r\nsly]").test(content)) {
+                find[key] = idiomDictionary[key];
+                for (let i = 0; find[key].ref && i < find[key].ref.length; i++) {
+                    let refKey = find[key].ref[i];
+                    if (!find[refKey] && idiomDictionary[refKey]) {
+                        find[refKey] = idiomDictionary[refKey];
+                    }
+                }
+            }
+        });
+
+
+
+        // viewing
         let parentElement = it.parentElement;
+
+        // input
+        let inputDiv = document.createElement("div");
+        inputDiv.className = "sentence input-language-container hide";
+        let inputText = document.createElement("input");
+        inputText.setAttribute("type", "text");
+        inputText.className = "input";
+        inputText.setAttribute("placeholder", content);
+
+        inputText.addEventListener("input", evt => {
+            if (content.startsWith(evt.target.value)) {
+                inputText.setAttribute("style", "border: none");
+            } else {
+                inputText.setAttribute("style", "border: 2px solid red");
+            }
+           console.log(content.startsWith(evt.target.value), evt.target.value);
+        });
+        inputDiv.append(inputText);
+        parentElement.append(inputDiv);
+
+
         let findKeys = Object.keys(find);
         if (findKeys.length > 0) {
             let containDiv = document.createElement("div");
             containDiv.className = "explain-container hide";
             findKeys.forEach(fkit => {
                 let f = find[fkit];
+
                 let wordDiv = document.createElement("div");
                 wordDiv.className = "explain word";
                 wordDiv.textContent = fkit + (f.phonetic?(" [" + f.phonetic+ "]"):"");
@@ -71,19 +108,13 @@ window.addEventListener('DOMContentLoaded', function(){
                         meanSubDiv.textContent = mean.mean[j];
                         meanAtDiv.appendChild(meanSubDiv);
                     }
-
-
                     meanDiv.appendChild(meanAtDiv);
                 }
-                // meanDiv.textContent = fkit;
                 containDiv.appendChild(meanDiv);
             });
             parentElement.appendChild(containDiv);
         }
-        // content.
-        // let contents = content.split(" ");
-        // console.log(content, contents);
-    })
+    });
 
 
 
@@ -114,45 +145,9 @@ window.addEventListener('DOMContentLoaded', function(){
             }
         }
 
-        console.log(btns);
         for (let j = 0; j < btns.length; j++) {
             sentenceContainer.appendChild(btns[j]);
         }
 
     }
-
-
-    // for (let i = 0; i < sentenceContainers.length; i++) {
-    //     var sentenceContainer = sentenceContainers[i];
-    //     console.log(sentenceContainer);
-    //     var btns = [];
-    //     for (let j = 0; j < sentenceContainer.children.length; j++) {
-    //         var cit = sentenceContainer.children[j];
-    //         if (cit.nodeType === 1) {
-    //             console.log(cit);
-    //             let div = document.createElement("span");
-    //             div.textContent = list[j];
-    //             div.className = 'toggle';
-    //             (function (at) {
-    //                 div.addEventListener("click", event => {
-    //                     if (at.getAttribute("style") && at.getAttribute("style").indexOf("display:block") >= 0 ){
-    //                         at.setAttribute("style", "display:none")
-    //                     } else {
-    //                         at.setAttribute("style", "display:block")
-    //                     }
-    //                 });
-    //             })(cit);
-    //             btns.push(div);
-    //         }
-    //     }
-    //
-    //     console.log(btns);
-    //     for (let j = 0; j < btns.length; j++) {
-    //         sentenceContainer.appendChild(btns[j]);
-    //     }
-    //
-    // }
-
-
-
 });

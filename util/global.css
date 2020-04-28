@@ -18,9 +18,15 @@
 .second-language {
     color: #707070;
     margin-left: 10px;
-
 }
 
+.input-language-container {
+    margin-right: 10px;
+}
+.input-language-container .input {
+    width: 100%;
+    color: #000000;
+}
 
 .hide {
     display: none;
