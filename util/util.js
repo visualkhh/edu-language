@@ -28,6 +28,9 @@ window.addEventListener('DOMContentLoaded', function(){
                     if (!find[refKey] && dictionary[refKey]) {
                         find[refKey] = dictionary[refKey];
                     }
+                    if (!find[refKey] && idiomDictionary[refKey]) {
+                        find[refKey] = idiomDictionary[refKey];
+                    }
                 }
             }
         });
@@ -40,6 +43,9 @@ window.addEventListener('DOMContentLoaded', function(){
                     let refKey = find[key].ref[i];
                     if (!find[refKey] && idiomDictionary[refKey]) {
                         find[refKey] = idiomDictionary[refKey];
+                    }
+                    if (!find[refKey] && dictionary[refKey]) {
+                        find[refKey] = dictionary[refKey];
                     }
                 }
             }
@@ -57,10 +63,11 @@ window.addEventListener('DOMContentLoaded', function(){
         inputText.setAttribute("type", "text");
         inputText.className = "input";
         inputText.setAttribute("placeholder", content);
+        inputText.setAttribute("style", "border: border: 1px solid gray");
 
         inputText.addEventListener("input", evt => {
             if (content.startsWith(evt.target.value)) {
-                inputText.setAttribute("style", "border: none");
+                inputText.setAttribute("style", "border: border: 1px solid gray");
             } else {
                 inputText.setAttribute("style", "border: 2px solid red");
             }
@@ -121,20 +128,23 @@ window.addEventListener('DOMContentLoaded', function(){
 
 
     let sentenceContainers = document.querySelectorAll('.sentence-container');
-    const list = ['-','🐵', '🐧', '🐱', '🦊', '🐔', '🦄'];
+    const list = ['🐳','🐵', '🐧', '🐱', '🦊', '🐔', '🦄'];
 
     for (let i = 0; i < sentenceContainers.length; i++) {
         var sentenceContainer = sentenceContainers[i];
         var btns = [];
         for (let j = 0; j < sentenceContainer.children.length; j++) {
             var cit = sentenceContainer.children[j];
-            if (cit.nodeType === 1 && cit.className.indexOf("hide")>=0) {
+            // if (cit.nodeType === 1 && cit.className.indexOf("hide")>=0) {
+            if (cit.nodeType === 1) {
                 let div = document.createElement("span");
                 div.textContent = list[j];
                 div.className = 'toggle';
                 (function (at) {
                     div.addEventListener("click", event => {
-                        if (at.getAttribute("style") && at.getAttribute("style").indexOf("display:block") >= 0 ){
+                        // console.log(window.getComputedStyle(at).display, at.style.visibility,'---');
+                        // if (at.getAttribute("style") && at.getAttribute("style").indexOf("display:block") >= 0 ){
+                        if (window.getComputedStyle(at).display === 'block' ){
                             at.setAttribute("style", "display:none")
                         } else {
                             at.setAttribute("style", "display:block")
