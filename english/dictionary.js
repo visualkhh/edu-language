@@ -445,7 +445,7 @@ const dictionary = {
     },
     "authorities": {
         "phonetic": "əˈθɔːr-;əˈθɑːr-",
-        "audio": "https://papago.naver.com/apis/tts/c_lt_3931-nvoice_clara_1.13.15_7bc13b8f043e2fba98f0e20e27c6ecd9-1588062885360",
+        "audio": "https://papago.naver.com/apis/tts/c_lt_6975-nvoice_clara_1.13.15_5a2dd4b34a8249c717234a8ca57c21ca-1588064408799",
         "means": [
             {"type": "명사", "mean": ["당국, 관계자, 정부당국"]},
         ],
@@ -499,11 +499,19 @@ const dictionary = {
     },
     "expose": {
         "phonetic": "ɪkˈspoʊz",
-        "audio": "https://papago.naver.com/apis/tts/c_lt_1853-nvoice_clara_1.13.15_d579698af6074c0023d2e486063f1c7d-1588063631204",
+        "audio": "https://papago.naver.com/apis/tts/c_lt_8870-nvoice_clara_1.13.15_69380f9b170303dfc8c8f2b652a9961b-1588064289248",
         "means": [
             {"type": "동사", "mean": ["(보통 때는 가려져 있는 것을) 드러내다", "(비도덕적·불법적인 것 등을) 폭로하다", "(유해한 환경 등에) 노출시키다"]},
         ],
-        "ref": ["exposed"]
+        "ref": ["exposed, exposure"]
+    },
+    "exposure": {
+        "phonetic": "ɪkˈspoʊz",
+        "audio": "https://papago.naver.com/apis/tts/c_lt_4755-nvoice_clara_1.13.15_6727837c7bde9f6185d270fa1487ee49-1588064324299",
+        "means": [
+            {"type": "명사", "mean": ["(유해한 환경 등에의) 노출", "(비도덕적·불법적인 것 등의) 폭로", "(언론을 통해) 알려짐"]},
+        ],
+        "ref": ["expose"]
     },
 };
 
