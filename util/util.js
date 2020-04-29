@@ -14,7 +14,11 @@ window.addEventListener('DOMContentLoaded', function(){
     let firstLanguages = document.querySelectorAll('.sentence-container>.first-language');
     firstLanguages.forEach(it => {
         let content = (it.textContent||"").trim();
-        content = content.replace(/[\{\}\[\]\/?.,;:|\)*~`!^\-_+<>@\#$%&\\\=\(\'\"]/gi, ' ');
+        // content = content.replace(/[\{\}\[\]\/?.,;:|\)*~`!^\-_+<>@\#$%&\\\=\(\'\"]/gi, ' ');
+        content = content.replace(/[\{\}\[\]\/?.,;:|\)*~!^\-_+<>@\#$%&\\\=\(\"]/gi, ' ');
+        // content = content.replace(/[\{\}\[\]\/?.,;:|\)*~!^\-_+<>@\#$%&\\\=\(\"]/gi, ' ');
+        // content = content.replace(/[  ]/gi, '');
+        // content = content.replace(/  /gi, '');
         content = content.toLowerCase();
         let contents = content.split(" ");
         let find = {};
