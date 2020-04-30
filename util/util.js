@@ -80,6 +80,31 @@ window.addEventListener('DOMContentLoaded', function(){
         inputDiv.append(inputText);
         parentElement.append(inputDiv);
 
+        // iframe
+        // let iframeDiv = document.createElement("div");
+        // iframeDiv.className = "sentence hide";
+        // let ifram = document.createElement("iframe");
+        // // ifram.setAttribute("type", "text");
+        // // ifram.className = "input";
+        // // ifram.setAttribute("src", "https://papago.naver.com/?sk=en&tk=ko&hn=0&st="+it.textContent);
+        // // ifram.setAttribute("src", "https://papago.naver.com/?sk=en&tk=ko&hn=0&st=probably%20actually%20happened%20in%20high%20school.%20I%20was%20in%20a%20boarding%20school%20in");
+        // // ifram.setAttribute("src", "https://papago.naver.com/apis/dictionary/search?data=%7B%22source%22%3A%22en%22%2C%22target%22%3A%22ko%22%2C%22text%22%3A%22actually%22%2C%22locale%22%3A%22ko%22%7D");
+        // ifram.setAttribute("style", "border: border: 1px solid gray");
+        // iframeDiv.append(ifram);
+        // parentElement.append(iframeDiv);
+
+
+        inputText.addEventListener("input", evt => {
+            if (content.startsWith(evt.target.value)) {
+                inputText.setAttribute("style", "border: border: 1px solid gray");
+            } else {
+                inputText.setAttribute("style", "border: 2px solid red");
+            }
+           console.log(content.startsWith(evt.target.value), evt.target.value);
+        });
+        inputDiv.append(inputText);
+        parentElement.append(inputDiv);
+
 
         let findKeys = Object.keys(find);
         if (findKeys.length > 0) {

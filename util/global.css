@@ -10,6 +10,12 @@
 .listen:before {
     content: "🔈";
 }
+.maleBeforeIcon:before {
+    content: "👱🏻 ";
+}
+.femaleBeforeIcon:before {
+    content: "👩🏻 ";
+}
 
 .first-language {
     color: #000000;
