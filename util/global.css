@@ -39,6 +39,8 @@
 }
 
 .explain-container {
+    max-height: 200px;
+    overflow: auto;
     /*margin-left: 10px;*/
 }
 
