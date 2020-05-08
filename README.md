@@ -2,7 +2,8 @@
 ## english
 ### news
 * [vox-covid19-koreanIQ110](english/news/vox-covid19-koreanIQ110.html)  
-* [bbs-covid19-KangKyungWha](english/news/bbs-covid19-KangKyungWha.html))
+* [bbs-covid19-KangKyungWha](english/news/bbs-covid19-KangKyungWha.html))  
+
 ### song
 * [Shape of You - Ed Sheera](english/song/Shape_of_You-Ed_Sheera.html)  
 * [Wiz Khalifa - See You Again](english/song/Wiz_Khalifa-See_You_Again.html)  
