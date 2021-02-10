@@ -1,5 +1,6 @@
+var audio = new Audio();
 function play(url) {
-    var audio = new Audio();
+    audio.pause();
     audio.src = url;
     audio.play();
 }

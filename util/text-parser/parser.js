@@ -10,45 +10,21 @@ function timer(ms) {
     return new Promise(res => setTimeout(res, ms));
 }
 
-/**
- * @deprecated
- */
-async function start() { // We need to wrap the loop into an async function for this to work
-    var sw = true;
-    for (var i = 0; i < source.length; i += 3) {
-        console.log('<div class="sentence-container">\n' +
-            '    <div class="sentence first-language ' + (sw ? 'maleBeforeIcon' : 'femaleBeforeIcon') + '">')
-        console.log(source[i + 1]);
-        console.log("</div>\n" +
-            "    <div class=\"sentence second-language hide\">");
-        console.log(source[i + 2]);
-        console.log("</div>\n" +
-            "</div>");
-        sw = !sw;
-        // console.log(source[i+2]);
-        // console.log(source[i], source[i+1], source[i+2]);
-        await timer(100); // then the created Promise can be awaited
-    }
-}
-
-// start();
-
 
 //딕셔널이에 없는값들만 골라서 파파고에 물어본다.
 async function papagoStart() {
-    var sw = true;
-
-    // for (var i = 0; i < source.length; i += 3) {
-    //     var content = source[i + 1];
     const descriptions = [];
-    for (var i = 0; i < source.length; i += 2) {
+    for (var i = 0; i < source.length; i += 1) {
+        if(!content) {
+            continue;
+        }
         var content = source[i];
-        var description = source[i + 1];
+        var description = await papagoTranslate(content);
         var content_audio = await papagoAudio(content)
-        var description_audio = await papagoAudio(description)
+        // var description_audio = await papagoAudio(description)
         descriptions.push({
             en: {desc: content, audio: content_audio},
-            ko: {desc: description, audio: description_audio}
+            ko: {desc: description}
         });
         console.log(content);
         content = content.replace(/[\{\}\[\]\/?.,;:|\)*~'!^\-_+<>@\#$%&\\\=\(\"]/gi, ' ');
@@ -56,7 +32,6 @@ async function papagoStart() {
         content = content.trim();
         let split = content.split(" ");
         split.forEach(it => {
-            // if (it && isNaN(it) && !dic.dictionary[it]) {
             if (it && isNaN(it)) {
                 newDic[it] = {}
             }
@@ -78,23 +53,34 @@ async function papagoStart() {
 }
 
 // 키안에 자식이 없으면 만들어서 물어본다
-async function papagoStartFromDic() {
-    let dicKeys = Object.keys(dic.dictionary);
-    dicKeys.forEach(it => {
-        if (Object.keys(dic.dictionary[it]).length == 0) {
-            newDic[it] = {}
-        }
-    })
-
-    console.log(newDic);
-
-    let keys = Object.keys(newDic);
-    for (let i = 0; i < keys.length; i++) {
-        var key = keys[i];
-        await timer(100);
-        papago(key);
-
-    }
+async function papagoTranslate(desc) {
+    desc = qs.escape(desc);
+    const rs = await fetch("https://papago.naver.com/apis/n2mt/translate", {
+        "headers": {
+            "accept": "application/json",
+            "accept-language": "ko",
+            "authorization": "PPG de6416b3-21d7-4642-a2a3-0d9e458f10f6:p+UfLB/8uu5IhES1AySfqg==",
+            "cache-control": "no-cache",
+            "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
+            "device-type": "pc",
+            "pragma": "no-cache",
+            "sec-ch-ua": "\"Chromium\";v=\"88\", \"Google Chrome\";v=\"88\", \";Not A Brand\";v=\"99\"",
+            "sec-ch-ua-mobile": "?0",
+            "sec-fetch-dest": "empty",
+            "sec-fetch-mode": "cors",
+            "sec-fetch-site": "same-origin",
+            "timestamp": "1612933360691",
+            "x-apigw-partnerid": "papago",
+            "cookie": "NNB=MMUTUFGDLONF6; NRTK=ag#30s_gr#2_ma#-2_si#2_en#0_sp#0; ASID=70d97a1c00000175c05a8c8b00005e56; nx_ssl=2; _gid=GA1.2.1311689521.1612847211; papago_skin_locale=ko; JSESSIONID=001DDC44ECB967DCF439B1012CF41363; _ga=GA1.2.594285439.1598922588; _ga_7VKFYR6RV1=GS1.1.1612933345.222.0.1612933345.60"
+        },
+        "referrer": "https://papago.naver.com/",
+        "referrerPolicy": "origin",
+        "body": "deviceId=de6416b3-21d7-4642-a2a3-0d9e458f10f6&locale=ko&dict=true&dictDisplay=30&honorific=false&instant=false&paging=false&source=en&target=ko&text="+desc+"&authroization=PPG%20de6416b3-21d7-4642-a2a3-0d9e458f10f6%3Ap%2BUfLB%2F8uu5IhES1AySfqg%3D%3D&timestamp=1612933360691",
+        "method": "POST",
+        "mode": "cors"
+    });
+    const data = await rs.json();
+    return data.translatedText;
 }
 
 
@@ -158,11 +144,6 @@ async function papago(key) {
             newDic[entry].means.push(mean);
         });
     }
-
-    // fs.writeFileSync('data.json', JSON.stringify(newDic), (err) => {
-    //     if (err) throw err;
-    //     console.log('Data written to file');
-    // });
     fs.writeFileSync('words.js', 'const WORDS = ' + JSON.stringify(newDic), (err) => {
         if (err) throw err;
         console.log('Data written to file');
@@ -199,28 +180,10 @@ function makeID(key) {
 
 //딕셔널이에서 audio없으면 가져와라.
 async function papagoAudio(desc) {
-    // await timer(600);
     let rs = await makeID(desc);
     let json = await rs.json();
     return "https://papago.naver.com/apis/tts/" + json.id;
 }
-
-// async function papagoAudio() {
-//     let keys = Object.keys(dic.dictionary);
-//     for (let i = 0; i < keys.length; i++) {
-//         var key = keys[i];
-//         let at = dic.dictionary[key];
-//         if (!at.audio) {
-//             // await timer(600);
-//             let rs = await makeID(key);
-//             let json = await rs.json();
-//             at.audio = "https://papago.naver.com/apis/tts/"+json.id;
-//             console.log(key, json.id);
-//             // console.log(key);
-//         }
-//     }
-//     console.log(JSON.stringify(dic.dictionary));
-// }
 
 //데이터 가져오기.
 papagoStart();
