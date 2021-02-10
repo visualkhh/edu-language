@@ -668,3 +668,5 @@ modules.xml
 /english/dictionary.js.temp
 /util/papago-crawling/data.json
 /data.json
+/words.js
+/descriptions.js
