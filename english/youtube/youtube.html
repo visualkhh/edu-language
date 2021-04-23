@@ -31,8 +31,11 @@
 <!-- 1. The <iframe> (and video player) will replace this <div> tag. -->
 <div id="player"></div>
 <div>
-    <input style="width: 50%" type="text" id="url"/>
-    <button id="applyUrl"><- Apply URL</button>
+    <input style="width: 30%" type="text" id="url"/>
+</div>
+<div>
+    <button id="paste">paste</button>
+    <button id="applyUrl">Play URL</button>
 </div>
 
 <script>
@@ -82,6 +85,10 @@
     }
 
 
+    document.getElementById('paste').addEventListener("click", function () {
+        navigator.clipboard.readText().then(text => document.getElementById('url').value = text);
+        // document.getElementById('url').value =  ClipboardEvent.clipboardData;
+    })
     document.getElementById('applyUrl').addEventListener("click", function () {
         // onYouTubeIframeAPIReady('giSQdh9LrRY')
         /*
@@ -92,7 +99,8 @@
          */
         //https://youtu.be/bamXURWbCpg
         let split = document.getElementById('url').value.split("/");
-        player.loadVideoById(split[split.length-1], 5, "large");
+        // player.loadVideoById(split[split.length-1], 5, "large");
+        player.loadVideoById(split[split.length-1]);
         // player.play();
         // console.log(document.getElementById('url').value)
         // console.log(document.getElementById('player').src)
