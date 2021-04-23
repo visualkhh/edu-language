@@ -86,7 +86,10 @@
 
 
     document.getElementById('paste').addEventListener("click", function () {
-        navigator.clipboard.readText().then(text => document.getElementById('url').value = text);
+        navigator.clipboard.readText().then(text => {
+            document.getElementById('url').value = text;
+            play();
+        });
         // document.getElementById('url').value =  ClipboardEvent.clipboardData;
     })
     document.getElementById('applyUrl').addEventListener("click", function () {
@@ -97,14 +100,21 @@
                'endSeconds': 60,
                'suggestedQuality': 'large'});
          */
+        play();
         //https://youtu.be/bamXURWbCpg
-        let split = document.getElementById('url').value.split("/");
+        // let split = document.getElementById('url').value.split("/");
         // player.loadVideoById(split[split.length-1], 5, "large");
-        player.loadVideoById(split[split.length-1]);
+        // player.loadVideoById(split[split.length-1]);
         // player.play();
         // console.log(document.getElementById('url').value)
         // console.log(document.getElementById('player').src)
     });
+
+    function play() {
+        let split = document.getElementById('url').value.split("/");
+        // player.loadVideoById(split[split.length-1], 5, "large");
+        player.loadVideoById(split[split.length - 1]);
+    }
 </script>
 </body>
 </html>
