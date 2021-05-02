@@ -10,6 +10,8 @@ function play(url) {
 window.addEventListener('DOMContentLoaded', function(){
 
     const body = document.querySelector('body');
+
+
     DESCRIPTIONS.forEach((data,idx,i) => {
         const div = document.createElement("div");
         div.classList.add('sentence-container');
@@ -64,16 +66,10 @@ window.addEventListener('DOMContentLoaded', function(){
         //     // play(data.en.audio)
         // });
         slider.addEventListener('mousemove', e => {
-            if (oldValue != slider.value) {
-                let number = slider.value - 1;
-                let id = '#explain_' + idx + '_' + number;
-                location.hash = id;
-                document.querySelector(id).click();
-                let regExp = new RegExp('('+wordKeys[number]+')', 'gmi');
-                enDiv.innerHTML = data.en.desc.replace(regExp, "<span class='attention'>$1</span>")
-                //play(data.en.audio)
-            }
-            oldValue = slider.value
+            oldValue = attention(oldValue, slider, idx, wordKeys, enDiv, data);
+        });
+        slider.addEventListener('touchmove', e => {
+            oldValue = attention(oldValue, slider, idx, wordKeys, enDiv, data);
         });
         // sliderDiv.classList.add('second-language');
         // sliderDiv.classList.add('hide');
@@ -96,6 +92,19 @@ window.addEventListener('DOMContentLoaded', function(){
     settingToggleBtn();
 });
 
+
+attention = function (oldValue, slider, idx, wordKeys, enDiv, data) {
+    if (oldValue != slider.value) {
+        let number = slider.value - 1;
+        let id = '#explain_' + idx + '_' + number;
+        location.hash = id;
+        document.querySelector(id).click();
+        let regExp = new RegExp('(' + wordKeys[number] + ')', 'gmi');
+        enDiv.innerHTML = data.en.desc.replace(regExp, "<span class='attention'>$1</span>")
+    }
+    oldValue = slider.value
+    return oldValue;
+}
 
 
 findWords = function(content) {
