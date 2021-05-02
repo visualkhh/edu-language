@@ -10,7 +10,7 @@ function play(url) {
 window.addEventListener('DOMContentLoaded', function(){
 
     const body = document.querySelector('body');
-    DESCRIPTIONS.forEach((data,a,i) =>{
+    DESCRIPTIONS.forEach((data,idx,i) => {
         const div = document.createElement("div");
         div.classList.add('sentence-container');
 
@@ -22,7 +22,6 @@ window.addEventListener('DOMContentLoaded', function(){
         if(data.en.audio) {
             enDiv.addEventListener('click', evt => play(data.en.audio));
         }
-
 
         const koDiv = document.createElement("div");
         koDiv.classList.add('sentence');
@@ -44,12 +43,48 @@ window.addEventListener('DOMContentLoaded', function(){
         ///
 
         //explain
-        const explainDiv = makeExplainContainer(findWords(data.en.desc));
+        let words = findWords(data.en.desc);
+        let wordKeys = Object.keys(words);
+        const explainDiv = makeExplainContainer(idx, words);
 
+
+        //slider
+        const sliderDiv = document.createElement("div");
+        sliderDiv.classList.add('hide');
+        //  <input type="range" min="1" max="100" value="50" class="slider" id="myRange">
+        const slider = document.createElement("input");
+        slider.setAttribute('type', 'range')
+        slider.setAttribute('min', 0)
+        slider.setAttribute('max', wordKeys.length)
+        slider.value = 0;
+        slider.classList.add('slider');
+        let oldValue = 0;
+        // slider.addEventListener('change', evt => {
+        //     console.log('-->', slider.value, wordKeys[slider.value]);
+        //     // play(data.en.audio)
+        // });
+        slider.addEventListener('mousemove', e => {
+            if (oldValue != slider.value) {
+                let number = slider.value - 1;
+                let id = '#explain_' + idx + '_' + number;
+                location.hash = id;
+                document.querySelector(id).click();
+                let regExp = new RegExp('('+wordKeys[number]+')', 'gmi');
+                enDiv.innerHTML = data.en.desc.replace(regExp, "<span class='attention'>$1</span>")
+                //play(data.en.audio)
+            }
+            oldValue = slider.value
+        });
+        // sliderDiv.classList.add('second-language');
+        // sliderDiv.classList.add('hide');
+        sliderDiv.appendChild(slider);
+
+
+        div.appendChild(explainDiv);
         div.appendChild(enDiv);
         div.appendChild(koDiv);
         div.appendChild(typingDiv);
-        div.appendChild(explainDiv);
+        div.appendChild(sliderDiv);
 
         body.appendChild(div);
     });
@@ -86,19 +121,19 @@ findWords = function(content) {
     return find;
 }
 
-makeExplainContainer = function(words) {
+makeExplainContainer = function(idx, words) {
         let containDiv = document.createElement("div");
         containDiv.classList.add("explain-container");
         containDiv.classList.add("hide");
         let findKeys = Object.keys(words);
         if (findKeys.length > 0) {
-            findKeys.forEach(fkit => {
+            findKeys.forEach((fkit, sidx, a) => {
                 let f = words[fkit];
 
                 let wordDiv = document.createElement("div");
                 wordDiv.className = "explain word";
                 wordDiv.textContent = fkit + (f.phonetic?(" [" + f.phonetic+ "]"):"");
-
+                wordDiv.id = 'explain_' + idx + '_' + sidx;
                 if (f.audio) {
                     wordDiv.addEventListener('click', evt => play(f.audio));
                 }

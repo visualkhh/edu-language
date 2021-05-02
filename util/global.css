@@ -65,6 +65,15 @@
     margin: 10px 10px;
     font-size: 20px;
 }
+.slider {
+    width: 100%;
+    /*font-size: 20px;*/
+}
+.attention {
+    font-weight: bold;
+    color: brown;
+}
+
 /*.toggle {*/
 /*}*/
 /*.toggle:after {*/
