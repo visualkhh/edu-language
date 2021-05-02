@@ -71,6 +71,9 @@ window.addEventListener('DOMContentLoaded', function(){
         slider.addEventListener('touchmove', e => {
             oldValue = attention(oldValue, slider, idx, wordKeys, enDiv, data);
         });
+        slider.addEventListener('change', e => {
+            oldValue = attention(oldValue, slider, idx, wordKeys, enDiv, data);
+        });
         // sliderDiv.classList.add('second-language');
         // sliderDiv.classList.add('hide');
         sliderDiv.appendChild(slider);
