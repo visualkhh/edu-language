@@ -6,6 +6,7 @@
 * [spring guide](english/it/spring-guides/index.html)  
 
 ### news
+* [Suez Canal reopens after giant stranded ship is freed](english/news/suez/index.html)  
 * [vox-covid19-koreanIQ110](english/news/vox-covid19-koreanIQ110.html)  
 * [bbs-covid19-KangKyungWha](english/news/bbs-covid19-KangKyungWha.html))  
 
