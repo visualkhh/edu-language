@@ -20,7 +20,8 @@ async function papagoStart() {
             continue;
         }
         var description = await papagoTranslate(content);
-        var content_audio = await papagoAudio(content)
+        var content_audio = ''; //await papagoAudio(content)
+        // console.log('11')
         // var description_audio = await papagoAudio(description)
         descriptions.push({
             en: {desc: content, audio: content_audio},
@@ -48,31 +49,36 @@ async function papagoStart() {
     for (let i = 0; i < keys.length; i++) {
         var key = keys[i];
         await timer(100);
-        papago(key);
+        await papago(key);
     }
+    console.log('done');
 }
 
 // 키안에 자식이 없으면 만들어서 물어본다
 async function papagoTranslate(desc) {
     desc = qs.escape(desc);
     const rs = await fetch("https://papago.naver.com/apis/n2mt/translate", {
-        "credentials": "include",
         "headers": {
-            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:88.0) Gecko/20100101 Firefox/88.0",
-            "Accept": "application/json",
-            "Accept-Language": "ko",
-            "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+            "accept": "application/json",
+            "accept-language": "ko",
+            "authorization": "PPG bd769290-8a5f-437a-910e-498c14ccca9f:MN3Q69s+661+pxUsJxcDFA==",
+            "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
             "device-type": "pc",
+            "sec-ch-ua": "\"Google Chrome\";v=\"131\", \"Chromium\";v=\"131\", \"Not_A Brand\";v=\"24\"",
+            "sec-ch-ua-mobile": "?0",
+            "sec-ch-ua-platform": "\"macOS\"",
+            "timestamp": "1732868114157",
             "x-apigw-partnerid": "papago",
-            "Timestamp": "1620385743197",
-            "Authorization": "PPG 8580801c-3987-4344-bcaf-ab385b3bd994:4b/sTtaj6j3/id8AYyZ6oQ=="
+            "Referer": "https://papago.naver.com/",
+            "Referrer-Policy": "origin"
         },
-        "referrer": "https://papago.naver.com/",
-        "body": "deviceId=8580801c-3987-4344-bcaf-ab385b3bd994&locale=ko&dict=true&dictDisplay=30&honorific=false&instant=false&paging=false&source=en&target=ko&text="+desc+"&authroization=PPG%208580801c-3987-4344-bcaf-ab385b3bd994%3A4b%2FsTtaj6j3%2Fid8AYyZ6oQ%3D%3D&timestamp=1620385743197",
-        "method": "POST",
-        "mode": "cors"
+        "body": "deviceId=bd769290-8a5f-437a-910e-498c14ccca9f&locale=ko&dict=true&dictDisplay=30&honorific=true&instant=false&paging=false&source=en&target=ko&text="+desc+"&usageAgreed=true",
+        "method": "POST"
     });
+
+
     const data = await rs.json();
+    console.log('------>',data)
     return data.translatedText;
 }
 
@@ -81,30 +87,31 @@ async function papago(key) {
     // var reqQuery = {"source":"en","target":"ko","text":key,"locale":"ko"};
     // var reqQueryStr = qs.escape(JSON.stringify(reqQuery));
     const rs = await fetch("https://papago.naver.com/apis/dictionary/search?source=en&target=ko&text="+key+"&locale=ko", {
-        "credentials": "include",
         "headers": {
-            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:88.0) Gecko/20100101 Firefox/88.0",
-            "Accept": "application/json",
-            "Accept-Language": "ko-KR,ko;q=0.8,en-US;q=0.5,en;q=0.3",
-            "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+            "accept": "application/json",
+            "authorization": "PPG bd769290-8a5f-437a-910e-498c14ccca9f:pVWZzUbbvBuPMT5qK0vZOw==",
+            "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
+            "sec-ch-ua": "\"Google Chrome\";v=\"131\", \"Chromium\";v=\"131\", \"Not_A Brand\";v=\"24\"",
+            "sec-ch-ua-mobile": "?0",
+            "sec-ch-ua-platform": "\"macOS\"",
+            "timestamp": "1732865948526",
             "x-apigw-partnerid": "papago",
-            "Timestamp": "1620385778668",
-            "Authorization": "PPG 8580801c-3987-4344-bcaf-ab385b3bd994:EIe9HjezTRHASiM0VGVDag=="
+            "Referer": "https://papago.naver.com/",
+            "Referrer-Policy": "origin"
         },
-        "referrer": "https://papago.naver.com/",
-        "method": "GET",
-        "mode": "cors"
+        "body": null,
+        "method": "GET"
     });
 
     const data = await rs.json();
     let entry = data.items[0].entry;
     entry = entry.replace("<b>", "").replace("</b>", "").toLowerCase();
-    console.log(entry)
+    console.log('-->',entry)
     if (key != entry) {
         newDic[key].ref = [entry];
     }
     newDic[entry] = {};
-    newDic[entry].audio = await papagoAudio(entry);
+    newDic[entry].audio = ''; //await papagoAudio(entry);
     let phoneticSigns = data.items[0].phoneticSigns;
     if (phoneticSigns && phoneticSigns.length > 0) {
         newDic[entry].phonetic = phoneticSigns[0].sign;
@@ -142,23 +149,17 @@ function makeID(key) {
         "headers": {
             "accept": "application/json",
             "accept-language": "ko",
-            "authorization": "PPG de6416b3-21d7-4642-a2a3-0d9e458f10f6:E3ijiBtJQp7Bm+xbdNDYUA==",
-            "cache-control": "no-cache",
+            "authorization": "PPG bd769290-8a5f-437a-910e-498c14ccca9f:dTuYJQGx04QOj0CSOecgHg==",
             "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
-            "pragma": "no-cache",
-            "sec-ch-ua": "\"Chromium\";v=\"88\", \"Google Chrome\";v=\"88\", \";Not A Brand\";v=\"99\"",
+            "sec-ch-ua": "\"Google Chrome\";v=\"131\", \"Chromium\";v=\"131\", \"Not_A Brand\";v=\"24\"",
             "sec-ch-ua-mobile": "?0",
-            "sec-fetch-dest": "empty",
-            "sec-fetch-mode": "cors",
-            "sec-fetch-site": "same-origin",
-            "timestamp": "1612927204110",
-            "cookie": "NNB=MMUTUFGDLONF6; NRTK=ag#30s_gr#2_ma#-2_si#2_en#0_sp#0; ASID=70d97a1c00000175c05a8c8b00005e56; nx_ssl=2; _gid=GA1.2.1311689521.1612847211; papago_skin_locale=ko; JSESSIONID=001DDC44ECB967DCF439B1012CF41363; _ga=GA1.2.594285439.1598922588; _ga_7VKFYR6RV1=GS1.1.1612921669.220.1.1612924577.60"
+            "sec-ch-ua-platform": "\"macOS\"",
+            "timestamp": "1732865934440",
+            "Referer": "https://papago.naver.com/",
+            "Referrer-Policy": "origin"
         },
-        "referrer": "https://papago.naver.com/",
-        "referrerPolicy": "origin",
-        "body": "alpha=0&pitch=0&speaker=clara&speed=0&text=" + key,
-        "method": "POST",
-        "mode": "cors"
+        "body": "alpha=0&pitch=0&speaker=clara&speed=0&text=hi"+ key,
+        "method": "POST"
     });
 }
 
@@ -169,6 +170,7 @@ async function papagoAudio(desc) {
     return "https://papago.naver.com/apis/tts/" + json.id;
 }
 
+console.log('start!!!!!')
 //데이터 가져오기.
 papagoStart();
 

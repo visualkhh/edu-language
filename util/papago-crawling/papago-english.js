@@ -36,7 +36,7 @@ fetch("https://www.youtube.com/youtubei/v1/get_transcript?key=AIzaSyAO_FJ2SlqU8Q
 })
     .then((rs) => rs.json())
     .then((data) => {
-        // console.log(data.actions.);
+        console.log(data);
         let cueGroups = data.actions[0].updateEngagementPanelAction.content.transcriptRenderer.body.transcriptBodyRenderer.cueGroups;
         // console.log(data.actions[0]);
         for (let i = 0; i < cueGroups.length; i++) {

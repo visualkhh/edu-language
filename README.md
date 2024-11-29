@@ -2,6 +2,9 @@
 ## english
 [https://visualkhh.github.io/edu-language/](https://visualkhh.github.io/edu-language/)
 
+### interview
+* [minhakim-pachinko-1](english/interview/minhakim-pachinko-1/index.html)
+* [minhakim-pachinko-2](english/interview/minhakim-pachinko-2/index.html)
 ### IT
 * [spring guide](english/it/spring-guides/index.html)  
 
