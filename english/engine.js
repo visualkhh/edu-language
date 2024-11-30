@@ -1,6 +1,9 @@
 // var audio = new Audio();
 const synth = window.speechSynthesis;
 let voices = synth.getVoices();
+if (synth.onvoiceschanged !== undefined) {
+    synth.onvoiceschanged = populateVoiceList;
+}
 function play(data) {
     const url = data.audio;
     const desc = data.text;
@@ -35,7 +38,7 @@ function populateVoiceList() {
         } else {
             return +1;
         }
-    });
+    }).filter(it => it.lang === 'en-US');
     const voiceSelect = document.querySelector(".voice-select");
     const selectedIndex =
         voiceSelect.selectedIndex < 0 ? 0 : voiceSelect.selectedIndex;
@@ -84,10 +87,8 @@ window.addEventListener('DOMContentLoaded', function() {
     voiceContainer.appendChild(pitch);
     body.appendChild(voiceContainer);
 
-    populateVoiceList();
-    if (synth.onvoiceschanged !== undefined) {
-        synth.onvoiceschanged = populateVoiceList;
-    }
+    // populateVoiceList();
+
 
 
     DESCRIPTIONS.forEach((data, idx, i) => {
