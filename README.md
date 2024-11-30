@@ -3,8 +3,13 @@
 [https://visualkhh.github.io/edu-language/](https://visualkhh.github.io/edu-language/)
 
 ### interview
-* [minhakim-pachinko-1](english/interview/minhakim-pachinko-1/index.html)
-* [minhakim-pachinko-2](english/interview/minhakim-pachinko-2/index.html)
+* [MinhaKim-pachinko-1](english/interview/MinhaKim-pachinko-1/index.html)
+* [MinhaKim-pachinko-2](english/interview/MinhaKim-pachinko-2/index.html)
+* [SikyungSung-street](english/interview/SikyungSung-street/index.html)
+
+### movie
+* [IdealsAndReality](english/movie/IdealsAndReality/index.html) 
+
 ### IT
 * [spring guide](english/it/spring-guides/index.html)  
 
