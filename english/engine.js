@@ -40,9 +40,10 @@ function populateVoiceList() {
         }
     }).filter(it => it.lang === 'en-US');
     const voiceSelect = document.querySelector(".voice-select");
-    const selectedIndex =
-        voiceSelect.selectedIndex < 0 ? 0 : voiceSelect.selectedIndex;
     voiceSelect.innerHTML = "";
+    // const selectedIndex =
+    //     voiceSelect.selectedIndex < 0 ? 0 : voiceSelect.selectedIndex;
+    // voiceSelect.innerHTML = "";
 
     for (let i = 0; i < voices.length; i++) {
         const option = document.createElement("option");
@@ -56,7 +57,7 @@ function populateVoiceList() {
         option.setAttribute("data-name", voices[i].name);
         voiceSelect.appendChild(option);
     }
-    voiceSelect.selectedIndex = selectedIndex;
+    // voiceSelect.selectedIndex = selectedIndex;
 }
 
 // descriptions = [];
@@ -87,7 +88,7 @@ window.addEventListener('DOMContentLoaded', function() {
     voiceContainer.appendChild(pitch);
     body.appendChild(voiceContainer);
 
-    // populateVoiceList();
+    populateVoiceList();
 
 
 
