@@ -1,11 +1,13 @@
 # education-language
 ## english
-[https://visualkhh.github.io/edu-language/](https://visualkhh.github.io/edu-language/)
+* [https://visualkhh.github.io/edu-language/](https://visualkhh.github.io/edu-language/)
+* [words](english/words.html)
 
 ### interview
 * [MinhaKim-pachinko-1](english/interview/MinhaKim-pachinko-1/index.html)
 * [MinhaKim-pachinko-2](english/interview/MinhaKim-pachinko-2/index.html)
-* [SikyungSung-street](english/interview/SikyungSung-street/index.html)
+* [nadiaxcoffee-FavoriteCoffe](english/interview/nadiaxcoffee-FavoriteCoffe/index.html)
+* [nadiaxcoffee-FavoriteCoffe-write](english/interview/nadiaxcoffee-FavoriteCoffe-write/index.html)
 
 ### movie
 * [IdealsAndReality](english/movie/IdealsAndReality/index.html) 

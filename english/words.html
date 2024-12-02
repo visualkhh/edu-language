@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="stylesheet" type="text/css" href="../../../util/global.css">
+</head>
+<body>
+<script src="./dictionary.js"></script>
+<script src="./engine.js"></script>
+<script>
+    window.addEventListener('DOMContentLoaded', (event) => {
+        document.body.appendChild(makeAudioController());
+
+        let node = makeExplainContainer(0, dictionary);
+        console.log('-----------------', node);
+        // node.classList.toggle('hide');
+        node.removeAttribute('class')
+        // const word = document.createElement('div');
+        // word.innerHTML = key;
+        document.body.appendChild(node);
+       //  Object.entries(dictionary).forEach(([key,value], index) => {
+       //      let node = makeExplainContainer(index,key);
+       //      console.log('-----------------', key,value, node);
+       //      node.classList.toggle('hide');
+       //     // const word = document.createElement('div');
+       //     // word.innerHTML = key;
+       //      document.body.appendChild(node);
+       //     // document.body.appendChild(word);
+       // });
+    });
+
+</script>
+</body>
+</html>

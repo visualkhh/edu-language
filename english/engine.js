@@ -40,30 +40,26 @@ function populateVoiceList() {
         }
     }).filter(it => it.lang === 'en-US');
     const voiceSelect = document.querySelector(".voice-select");
-    voiceSelect.innerHTML = "";
-    // const selectedIndex =
-    //     voiceSelect.selectedIndex < 0 ? 0 : voiceSelect.selectedIndex;
-    // voiceSelect.innerHTML = "";
+    if (voiceSelect) {
+        voiceSelect.innerHTML = "";
+        for (let i = 0; i < voices.length; i++) {
+            const option = document.createElement("option");
+            option.textContent = `${voices[i].name} (${voices[i].lang})`;
 
-    for (let i = 0; i < voices.length; i++) {
-        const option = document.createElement("option");
-        option.textContent = `${voices[i].name} (${voices[i].lang})`;
+            if (voices[i].default) {
+                option.textContent += " -- DEFAULT";
+            }
 
-        if (voices[i].default) {
-            option.textContent += " -- DEFAULT";
+            option.setAttribute("data-lang", voices[i].lang);
+            option.setAttribute("data-name", voices[i].name);
+            voiceSelect.appendChild(option);
         }
-
-        option.setAttribute("data-lang", voices[i].lang);
-        option.setAttribute("data-name", voices[i].name);
-        voiceSelect.appendChild(option);
     }
     // voiceSelect.selectedIndex = selectedIndex;
 }
 
 // descriptions = [];
-window.addEventListener('DOMContentLoaded', function() {
-
-    const body = document.querySelector('body');
+function makeAudioController() {
     const voiceContainer = document.createElement('div');
     voiceContainer.classList.add('voice-container');
     const voiceSelect = document.createElement('select');
@@ -86,6 +82,12 @@ window.addEventListener('DOMContentLoaded', function() {
     pitch.setAttribute('value', 1);
     voiceContainer.appendChild(pitch);
     voiceContainer.appendChild(pitch);
+    return voiceContainer;
+}
+function start() {
+
+    const body = document.querySelector('body');
+    const voiceContainer = makeAudioController();
     body.appendChild(voiceContainer);
 
     populateVoiceList();
@@ -173,7 +175,7 @@ window.addEventListener('DOMContentLoaded', function() {
     //     it.addEventListener('click', evt => play(it.getAttribute('audio')));
     // });
     settingToggleBtn();
-});
+};
 
 
 attention = function (oldValue, slider, idx, wordKeys, enDiv, data) {
