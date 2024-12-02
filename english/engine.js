@@ -228,14 +228,46 @@ makeExplainContainer = function (idx, words) {
             wordDiv.className = "explain word";
             wordDiv.textContent = fkit + (f.phonetic ? (" [" + f.phonetic + "]") : "");
             wordDiv.id = 'explain_' + idx + '_' + sidx;
+            wordDiv.dataset.word=fkit
             // if (f.audio) {
             wordDiv.addEventListener('click', evt => play({audio: f.audio, text: fkit}));
             // }
             containDiv.appendChild(wordDiv);
 
+
+
+
+
             let meanDiv = document.createElement("div");
             meanDiv.classList.add("explain");
             meanDiv.classList.add("mean-container");
+
+
+            if (f.ref) {
+                let refDiv = document.createElement("div");
+                refDiv.classList.add("ref-container");
+
+                let typeDiv = document.createElement("div");
+                typeDiv.className = "type";
+                typeDiv.textContent = "[ref]";
+                refDiv.appendChild(typeDiv);
+                // refDiv.innerText='[ref]'
+                meanDiv.appendChild(refDiv);
+
+                let meanSubDiv = document.createElement("div");
+                meanSubDiv.className = "mean";
+                // meanSubDiv.textContent = (j+1)+') '+mean.mean[j];
+                meanSubDiv.textContent = f.ref;
+                meanSubDiv.addEventListener('click', (e)=> {
+                    let word = e.target.textContent;
+                    let wordDiv = document.querySelector(`.explain.word[data-word="${word}"]`);
+                    if(wordDiv){
+                        wordDiv.scrollIntoView({behavior: "smooth", block: "center", inline: "nearest"});
+                    }
+                })
+                meanDiv.appendChild(meanSubDiv);
+
+            }
 
 
             for (let i = 0; f.means && i < f.means.length; i++) {

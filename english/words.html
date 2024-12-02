@@ -11,6 +11,22 @@
 <script>
     window.addEventListener('DOMContentLoaded', (event) => {
         document.body.appendChild(makeAudioController());
+        populateVoiceList();
+
+        //
+        // Object.entries(dictionary).forEach(([key,value], index) => {
+        //     if (value.ref) {
+        //         for (let i = 0; value.ref && i < value.ref.length; i++) {
+        //             let refKey = value.ref[i];
+        //             if (!find[refKey] && WORDS[refKey]) {
+        //                 find[refKey] = WORDS[refKey];
+        //             }
+        //             if (!find[refKey] && WORDS[refKey]) {
+        //                 find[refKey] = WORDS[refKey];
+        //             }
+        //         }
+        //     }
+        // });
 
         let node = makeExplainContainer(0, dictionary);
         console.log('-----------------', node);
