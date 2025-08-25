@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASCII Canvas Movie Viewer</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100dvh; /* Use dvh for full viewport height */
+            display: flex;
+            flex-direction: column; /* Changed to column to stack controls below canvas */
+            justify-content: flex-start; /* Align items to the start of the flex container */
+            align-items: center;
+            background-color: #f0f0f0;
+            overflow: hidden; /* Prevent overall scroll */
+        }
+        .top-section {
+            height: 50dvh;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            flex-shrink: 0; /* Prevent shrinking */
+        }
+        .bottom-section {
+            height: 50dvh;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start; /* Align items to the start */
+            align-items: center;
+            padding: 10px; /* Add some padding */
+            box-sizing: border-box; /* Include padding in height */
+            overflow-y: auto; /* Allow scrolling if content overflows */
+        }
+        canvas {
+            display: block;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            image-rendering: pixelated; /* For sharp, pixelated scaling */
+            flex-grow: 1; /* Allow canvas to grow and take available space in top-section */
+            max-height: calc(50dvh - 60px); /* Adjust based on controls height */
+        }
+        .controls {
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background-color: #fff;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            flex-shrink: 0; /* Prevent shrinking */
+        }
+        .controls input[type="range"] {
+            flex-grow: 1; /* Allow progress bar to take available space */
+            -webkit-appearance: none; /* Remove default styling */
+            height: 8px;
+            background: #ddd;
+            border-radius: 5px;
+            outline: none;
+            opacity: 0.7;
+            transition: opacity .2s;
+        }
+        .controls input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #007bff;
+            cursor: pointer;
+        }
+        .controls input[type="range"]::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #007bff;
+            cursor: pointer;
+        }
+        .controls button {
+            padding: 8px 15px;
+            cursor: pointer;
+            border: none;
+            background-color: #007bff;
+            color: white;
+            border-radius: 4px;
+            font-size: 1em;
+        }
+        .controls button:hover {
+            background-color: #0056b3;
+        }
+        .time-display {
+            font-family: monospace;
+            font-size: 1em;
+            min-width: 80px;
+            text-align: center;
+        }
+        .subtitle-display {
+            margin-top: 10px;
+            font-family: sans-serif;
+            font-size: 1.2em;
+            color: #333;
+            text-align: center;
+            min-height: 2em; /* Reserve space to prevent layout shifts */
+            padding: 5px;
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            width: 80%; /* Adjust as needed */
+            max-width: 800px; /* Limit width for readability */
+            word-wrap: break-word;
+            max-height: calc(100% - 100px); /* Example: Adjust based on button/translation display height */
+            overflow-y: auto; /* Enable scrolling for subtitle content */
+            flex-grow: 1; /* Allow it to take available space */
+        }
+        .subtitle-container {
+            margin-top: 10px;
+            width: 100%; /* Ensure it takes full width */
+            display: flex; /* Use flex to center content within it */
+            justify-content: center;
+            align-items: flex-start; /* Align items to the start */
+            flex-grow: 1; /* Allow it to grow */
+            overflow: hidden; /* Hide overflow from word-containers */
+        }
+        .word-container {
+            display: inline-flex; /* Use flex to align word and buttons */
+            flex-direction: column; /* Stack word and buttons vertically */
+            align-items: center; /* Center items horizontally */
+            margin: 0 5px; /* Add some spacing between word blocks */
+            vertical-align: top; /* Align to top for multi-line subtitles */
+        }
+        .word-container .subtitle-word {
+            cursor: pointer;
+            position: relative;
+            display: inline-block;
+            padding: 0 2px;
+        }
+        .word-container .subtitle-word:hover {
+            background-color: #e0e0e0;
+            border-radius: 3px;
+        }
+        .word-buttons {
+            display: flex;
+            gap: 5px; /* Space between buttons */
+            margin-top: 3px; /* Space between word and buttons */
+        }
+        .word-buttons button {
+            padding: 3px 8px;
+            font-size: 0.8em;
+            background-color: #6c757d; /* A more subtle color for word-specific buttons */
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            white-space: nowrap; /* Prevent button text from wrapping */
+        }
+        .word-buttons button:hover {
+            background-color: #5a6268;
+        }
+        .word-buttons button.active {
+            background-color: #28a745; /* Highlight active translation button */
+        }
+        .word-translation {
+            font-size: 0.9em;
+            color: #555;
+            margin-top: 3px;
+            text-align: center;
+            max-width: 150px; /* Limit width of translation */
+            word-wrap: break-word;
+        }
+        
+        .translation-display {
+            margin-top: 5px;
+            font-family: sans-serif;
+            font-size: 1em;
+            color: #666;
+            text-align: center;
+            min-height: 1.5em;
+            padding: 5px;
+            background-color: #f8f8f8;
+            border-radius: 5px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            width: 80%;
+            max-width: 800px;
+            word-wrap: break-word;
+        }
+    </style>
+</head>
+<body>
+    <div class="top-section">
+        <canvas id="ascii-canvas"></canvas>
+        <div class="controls">
+            <button id="play-pause-btn">Play</button>
+            <span id="current-time">00:00</span> / <span id="total-time">00:00</span>
+            <input type="range" id="progress-bar" value="0">
+        </div>
+    </div>
+    <div class="bottom-section">
+        <div class="subtitle-container" style="margin-top: 10px;">
+            <div id="subtitle-display" class="subtitle-display"></div>
+        </div>
+        <div class="translation-controls" style="display: flex; gap: 10px; margin-top: 10px;">
+            <button id="listen-sentence-btn" style="padding: 8px 15px; cursor: pointer; border: none; background-color: #007bff; color: white; border-radius: 4px; font-size: 1em;">영어 전체듣기</button>
+            <button id="prev-frame-btn" style="padding: 8px 15px; cursor: pointer; border: none; background-color: #007bff; color: white; border-radius: 4px; font-size: 1em;">Prev</button>
+            <button id="translate-btn" style="padding: 8px 15px; cursor: pointer; border: none; background-color: #007bff; color: white; border-radius: 4px; font-size: 1em;">한국어 번역</button>
+            <button id="next-frame-btn" style="padding: 8px 15px; cursor: pointer; border: none; background-color: #007bff; color: white; border-radius: 4px; font-size: 1em;">Next</button>
+        </div>
+        <div id="translation-display" class="translation-display"></div>
+    </div>
+    <script>
+
+        async function fetchSentenceTranslation(sentence) {
+            const translationDisplay = document.getElementById('translation-display');
+            translationDisplay.innerHTML = 'Translating...'; // Use innerHTML for potential <br> tags
+
+            try {
+                const lines = sentence.split('\n');
+                let translatedLines = [];
+
+                for (const line of lines) {
+                    if (line.trim() === '') {
+                        translatedLines.push(''); // Preserve empty lines
+                        continue;
+                    }
+                    const apiUrl = `https://api-cdn-plus.dioco.io/base_dict_getHoverDict_8?form=${encodeURIComponent(line.trim())}&lemma=&sl=en&tl=ko&pos=NOUN&pow=n`;
+                    const response = await fetch(apiUrl);
+                    const data = (await response.json()).data;
+
+                    let lineTranslatedText = 'No translation available.';
+                    if (data) {
+                        if (data.hoverDictEntries && Array.isArray(data.hoverDictEntries) && data.hoverDictEntries.length > 0) {
+                            const entry = data.hoverDictEntries[0];
+                            if (entry.text) {
+                                lineTranslatedText = entry.text;
+                            } else if (entry.meaning) { // Another possible field
+                                lineTranslatedText = entry.meaning;
+                            } else if (entry.definition) { // Another possible field
+                                lineTranslatedText = entry.definition;
+                            } else {
+                                lineTranslatedText = JSON.stringify(entry, null, 2);
+                            }
+                        } else if (data.translation) {
+                            lineTranslatedText = data.translation;
+                        } else if (data.text) {
+                            lineTranslatedText = data.text;
+                        } else if (data.results && data.results.length > 0) {
+                            if (data.results[0].text) {
+                                lineTranslatedText = data.results[0].text;
+                            } else if (data.results[0].senses && data.results[0].senses.length > 0 && data.results[0].senses[0].definition) {
+                                lineTranslatedText = data.results[0].senses[0].definition;
+                            }
+                        }
+                    }
+                    translatedLines.push(lineTranslatedText);
+                }
+
+                translationDisplay.innerHTML = translatedLines.join('<br>');
+
+            } catch (error) {
+                console.error('Error fetching sentence translation:', error);
+                translationDisplay.innerHTML = `Translation Error: ${error.message}`;
+            }
+        }
+
+
+        async function fetchWordTranslation(word) {
+            try {
+                const apiUrl = `https://api-cdn-plus.dioco.io/base_dict_getHoverDict_8?form=${encodeURIComponent(word.trim())}&lemma=&sl=en&tl=ko&pos=NOUN&pow=n`;
+                const response = await fetch(apiUrl);
+                const data = (await response.json()).data;
+
+                let translatedText = 'No translation available.';
+                if (data && data.hoverDictEntries && Array.isArray(data.hoverDictEntries) && data.hoverDictEntries.length > 0) {
+                    const entry = data.hoverDictEntries[0];
+                    if (entry.text) {
+                        translatedText = entry.text;
+                    } else if (entry.meaning) {
+                        translatedText = entry.meaning;
+                    } else if (entry.definition) {
+                        translatedText = entry.definition;
+                    } else {
+                        translatedText = JSON.stringify(entry, null, 2);
+                    }
+                } else if (data && data.translation) {
+                    translatedText = data.translation;
+                } else if (data && data.text) {
+                    translatedText = data.text;
+                } else if (data && data.results && data.results.length > 0) {
+                    if (data.results[0].text) {
+                        translatedText = data.results[0].text;
+                    } else if (data.results[0].senses && data.results[0].senses.length > 0 && data.results[0].senses[0].definition) {
+                        translatedText = data.results[0].senses[0].definition;
+                    }
+                }
+                return translatedText;
+            } catch (error) {
+                console.error('Error fetching word translation:', error);
+                throw error;
+            }
+        }
+
+        function speakWord(word, lang = 'en-US') { // Default to en-US if lang is not provided
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(word);
+                utterance.lang = lang;
+                window.speechSynthesis.speak(utterance);
+            } else {
+                alert('Speech synthesis not supported in this browser.');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const canvas = document.getElementById('ascii-canvas');
+            const ctx = canvas.getContext('2d');
+
+            let activeWordContainer = null; // To keep track of the currently active word container
+
+            // Get control elements
+            const playPauseBtn = document.getElementById('play-pause-btn');
+            const prevFrameBtn = document.getElementById('prev-frame-btn'); // New element
+            const nextFrameBtn = document.getElementById('next-frame-btn'); // New element
+            const listenSentenceBtn = document.getElementById('listen-sentence-btn'); // New element
+            const currentTimeSpan = document.getElementById('current-time');
+            const totalTimeSpan = document.getElementById('total-time');
+            const progressBar = document.getElementById('progress-bar');
+            const subtitleDisplay = document.getElementById('subtitle-display');
+            const translationDisplay = document.getElementById('translation-display'); // New element
+            const translateBtn = document.getElementById('translate-btn'); // New element
+            const topSection = document.querySelector('.top-section'); // New element
+            const controls = document.querySelector('.controls'); // New element
+
+            let currentSubtitleText = ''; // Variable to store current subtitle text
+
+            const movieBasePath = 'movie/jyp/';
+            let movieMetadata = null;
+            let frames = [];
+            let currentFrameIndex = 0;
+            let animationIntervalId = null;
+            let isPlaying = false;
+
+            // Tooltip element
+            const tooltip = document.createElement('div');
+            tooltip.classList.add('tooltip');
+            document.body.appendChild(tooltip); // Append to body to ensure it's on top
+
+            let currentHoveredWord = null;
+            let tooltipTimeout = null;
+
+            // RLE Decoding function
+            function rleDecode(compressedString) {
+                let decompressed = '';
+                let i = 0;
+                while (i < compressedString.length) {
+                    let char = compressedString[i];
+                    let count = 1;
+                    let numStr = '';
+                    let j = i + 1; // Start checking for number right after the character
+
+                    // Read consecutive digits to form the count
+                    while (j < compressedString.length && !isNaN(parseInt(compressedString[j]))) {
+                        numStr += compressedString[j];
+                        j++;
+                    }
+
+                    if (numStr.length > 0) {
+                        count = parseInt(numStr);
+                        i = j; // Move index past the number
+                    } else {
+                        i++; // No number found, move to next character
+                    }
+                    decompressed += char.repeat(count);
+                }
+                return decompressed;
+            }
+
+            // RLE Decoding function for colors
+            function rleDecodeColors(compressedColorRow) {
+                let decompressed = [];
+                for (const item of compressedColorRow) {
+                    const parts = item.split('_');
+                    let color = parts[0];
+                    let count = 1;
+                    if (parts.length > 1) {
+                        count = parseInt(parts[1]);
+                    }
+                    for (let i = 0; i < count; i++) {
+                        decompressed.push(color);
+                    }
+                }
+                return decompressed;
+            }
+
+            // Helper to format time (ms to MM:SS)
+            function formatTime(ms) {
+                const totalSeconds = Math.floor(ms / 1000);
+                const minutes = Math.floor(totalSeconds / 60);
+                const seconds = totalSeconds % 60;
+                return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            }
+
+            async function loadAllFrames() {
+                try {
+                    const metadataResponse = await fetch(`${movieBasePath}metadata.json`);
+                    if (!metadataResponse.ok) {
+                        throw new Error(`HTTP error! status: ${metadataResponse.status} for metadata.json`);
+                    }
+                    movieMetadata = await metadataResponse.json();
+                    console.log("Loaded movie metadata:", movieMetadata);
+
+                    // Set total time display
+                    totalTimeSpan.textContent = formatTime(movieMetadata.total_duration_ms || 0);
+                    progressBar.max = movieMetadata.total_duration_ms || 0;
+
+                    const framePromises = movieMetadata.frames.map(async (frameMeta) => {
+                        const frameResponse = await fetch(`${movieBasePath}${frameMeta.path}`);
+                        if (!frameResponse.ok) {
+                            throw new Error(`HTTP error! status: ${frameResponse.status} for ${frameMeta.path}`);
+                        }
+                        return frameResponse.json();
+                    });
+                    frames = await Promise.all(framePromises);
+                    
+                    console.log(`Loaded ${frames.length} frames.`);
+                    if (frames.length > 0) {
+                        // Initial render of the first frame and subtitle
+                        renderFrame(frames[currentFrameIndex], movieMetadata.frames[currentFrameIndex]);
+                        updateProgressBar(); // Update progress bar for initial state
+                        playPauseBtn.textContent = 'Play'; // Set button text to Play initially
+                    }
+
+                } catch (error) {
+                    console.error('Failed to load movie data:', error);
+                    canvas.width = 600;
+                    canvas.height = 100;
+                    ctx.font = '16px sans-serif';
+                    ctx.fillStyle = 'red';
+                    ctx.fillText(`Error loading movie: ${error.message}`, 10, 20);
+                }
+            }
+
+            function play() {
+                if (isPlaying) return;
+                isPlaying = true;
+                playPauseBtn.textContent = 'Pause';
+                const interval = movieMetadata && movieMetadata.frame_interval_ms ? movieMetadata.frame_interval_ms : 200;
+
+                animationIntervalId = setInterval(() => {
+                    if (frames.length === 0) return;
+
+                    currentFrameIndex = (currentFrameIndex + 1) % frames.length;
+                    // If we looped back to the start, stop playing unless explicitly told to loop
+                    if (currentFrameIndex === 0) {
+                        pause(); // Pause at the end of the video
+                        seek(0); // Reset to the beginning
+                        return; // Exit this interval tick
+                    }
+                    renderFrame(frames[currentFrameIndex], movieMetadata.frames[currentFrameIndex]);
+                    updateProgressBar();
+                }, interval);
+            }
+
+            function pause() {
+                if (!isPlaying) return;
+                isPlaying = false;
+                playPauseBtn.textContent = 'Play';
+                clearInterval(animationIntervalId);
+            }
+
+            function seek(timeMs) {
+                // Find the closest frame to the given timeMs
+                let closestFrameIndex = 0;
+                let minDiff = Infinity;
+
+                for (let i = 0; i < movieMetadata.frames.length; i++) {
+                    const frameTime = movieMetadata.frames[i].time_ms;
+                    const diff = Math.abs(frameTime - timeMs);
+                    if (diff < minDiff) {
+                        minDiff = diff;
+                        closestFrameIndex = i;
+                    }
+                }
+                currentFrameIndex = closestFrameIndex;
+                renderFrame(frames[currentFrameIndex], movieMetadata.frames[currentFrameIndex]);
+                updateProgressBar();
+            }
+
+            function updateProgressBar() {
+                if (movieMetadata && movieMetadata.frames.length > 0) {
+                    const currentFrameTime = movieMetadata.frames[currentFrameIndex].time_ms;
+                    progressBar.value = currentFrameTime;
+                    currentTimeSpan.textContent = formatTime(currentFrameTime);
+                }
+            }
+
+            function renderFrame(frameData, frameMetadata) {
+                let {content, width: asciiWidth, height: asciiHeight, colors} = frameData;
+
+                // Decode RLE if compression_type is 'rle'
+                if (movieMetadata && movieMetadata.compression_type === 'rle') {
+                    content = rleDecode(content);
+                }
+
+                const asciiRows = content.split('\n');
+
+                const availableWidth = topSection.clientWidth;
+                // Calculate available height for canvas within top-section (excluding controls)
+                // Assuming controls height is roughly 60px (padding + button height)
+                const controlsHeight = controls.offsetHeight || 60; // Get actual height or use estimate
+                const availableHeight = topSection.clientHeight - controlsHeight;
+
+                console.log('renderFrame debug:');
+                console.log('  asciiWidth:', asciiWidth, 'asciiHeight:', asciiHeight);
+                console.log('  topSection.clientWidth:', topSection.clientWidth, 'topSection.clientHeight:', topSection.clientHeight);
+                console.log('  controlsHeight:', controlsHeight);
+                console.log('  availableWidth (for canvas):', availableWidth, 'availableHeight (for canvas):', availableHeight);
+
+                const cellWidthForFitting = availableWidth / asciiWidth;
+                const cellHeightForFitting = availableHeight / asciiHeight;
+                let cellSize = Math.floor(Math.min(cellWidthForFitting, cellHeightForFitting));
+
+                console.log('  cellWidthForFitting:', cellWidthForFitting, 'cellHeightForFitting:', cellHeightForFitting);
+                console.log('  cellSize (before check):', cellSize);
+
+                // If cellSize becomes 0, it means there's not enough space to render at least 1 pixel per character.
+                // This can happen on very small screens or with very high asciiWidth/asciiHeight.
+                // In such cases, we should ensure cellSize is at least 1 to avoid canvas dimensions of 0.
+                if (cellSize === 0) {
+                    cellSize = 1; // Ensure a minimum cell size
+                    console.warn('  cellSize was 0, forcing to 1. This may cause overflow.');
+                }
+
+                const canvasWidth = cellSize * asciiWidth;
+                const canvasHeight = cellSize * asciiHeight;
+
+                console.log('  canvas.width:', canvasWidth, 'canvas.height:', canvasHeight);
+
+                canvas.width = canvasWidth;
+                canvas.height = canvasHeight;
+
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                ctx.imageSmoothingEnabled = false;
+
+                const fontFace = '"SF Mono", "Consolas", "Courier New", monospace';
+                ctx.font = `${cellSize}px ${fontFace}`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+
+                let decodedColors = null;
+                if (movieMetadata && movieMetadata.compression_type === 'rle' && colors) {
+                    decodedColors = [];
+                    for (const row of colors) {
+                        decodedColors.push(rleDecodeColors(row));
+                    }
+                } else {
+                    decodedColors = colors;
+                }
+
+                for (let y = 0; y < asciiHeight; y++) {
+                    if (y >= asciiRows.length) continue;
+                    for (let x = 0; x < asciiWidth; x++) {
+                        const char = asciiRows[y][x] || ' ';
+
+                        if (decodedColors && decodedColors[y] && decodedColors[y][x]) {
+                            ctx.fillStyle = `#${decodedColors[y][x]}`;
+                        } else {
+                            ctx.fillStyle = 'black';
+                        }
+                        ctx.fillText(char, x * cellSize + (cellSize / 2), y * cellSize + (cellSize / 2));
+                    }
+                }
+
+                // Update subtitle display (English)
+                if (frameMetadata && frameMetadata.subtitle) {
+                    currentSubtitleText = frameMetadata.subtitle; // Store current subtitle
+                    subtitleDisplay.innerHTML = ''; // Clear previous content
+                    const words = frameMetadata.subtitle.split(/\s+/); // Split by one or more spaces
+                    let activeWordContainer = null; // To keep track of the currently active word container
+
+                    words.forEach(wordText => {
+                        if (wordText) {
+                            const wordContainer = document.createElement('div');
+                            wordContainer.classList.add('word-container');
+
+                            const wordSpan = document.createElement('span');
+                            wordSpan.textContent = wordText;
+                            wordSpan.classList.add('subtitle-word');
+                            wordSpan.dataset.originalText = wordText; // Store original text
+                            wordContainer.appendChild(wordSpan);
+
+                            const wordButtonsDiv = document.createElement('div');
+                            wordButtonsDiv.classList.add('word-buttons');
+                            wordButtonsDiv.style.display = 'none'; // Initially hidden
+
+                            const translateWordBtn = document.createElement('button');
+                            translateWordBtn.textContent = '번역';
+                            translateWordBtn.dataset.word = wordText; // Store word for translation
+                            translateWordBtn.addEventListener('click', async (event) => {
+                                event.stopPropagation(); // Prevent click from bubbling to wordSpan
+                                if (wordSpan.dataset.translatedText && wordSpan.textContent !== wordSpan.dataset.originalText) {
+                                    // If currently showing translation, revert to original
+                                    wordSpan.textContent = wordSpan.dataset.originalText;
+                                    translateWordBtn.classList.remove('active');
+                                } else {
+                                    // If currently showing original or no translation fetched yet
+                                    if (!wordSpan.dataset.translatedText) { // Fetch only if not already translated
+                                        wordSpan.textContent = 'Translating...';
+                                        try {
+                                            const translatedText = await fetchWordTranslation(wordText);
+                                            wordSpan.dataset.translatedText = translatedText; // Store translated text
+                                            wordSpan.textContent = translatedText;
+                                            translateWordBtn.classList.add('active');
+                                        } catch (error) {
+                                            wordSpan.textContent = `Error: ${error.message}`;
+                                            translateWordBtn.classList.remove('active');
+                                        }
+                                    } else {
+                                        // Already translated, just show it
+                                        wordSpan.textContent = wordSpan.dataset.translatedText;
+                                        translateWordBtn.classList.add('active');
+                                    }
+                                }
+                            });
+                            wordButtonsDiv.appendChild(translateWordBtn);
+
+                            const listenWordBtn = document.createElement('button');
+                            listenWordBtn.textContent = '듣기';
+                            listenWordBtn.dataset.word = wordText; // Store word for listening
+                            listenWordBtn.addEventListener('click', (event) => {
+                                event.stopPropagation(); // Prevent click from bubbling to wordSpan
+                                const textToSpeak = wordSpan.textContent; // Get the currently displayed text
+                                const isTranslated = wordSpan.textContent !== wordSpan.dataset.originalText;
+                                speakWord(textToSpeak, isTranslated ? 'ko-KR' : 'en-US');
+                            });
+                            wordButtonsDiv.appendChild(listenWordBtn);
+
+                            wordContainer.appendChild(wordButtonsDiv);
+
+                            subtitleDisplay.appendChild(wordContainer);
+                            subtitleDisplay.appendChild(document.createTextNode(' ')); // Add space back
+
+                            // Click listener for the word itself
+                            wordSpan.addEventListener('click', () => {
+                                // Close previously active word's buttons/translation
+                                if (activeWordContainer && activeWordContainer !== wordContainer) {
+                                    activeWordContainer.querySelector('.word-buttons').style.display = 'none';
+                                    const prevWordSpan = activeWordContainer.querySelector('.subtitle-word');
+                                    const prevTranslateBtn = activeWordContainer.querySelector('.word-buttons button:first-child');
+                                    if (prevWordSpan.textContent !== prevWordSpan.dataset.originalText) {
+                                        prevWordSpan.textContent = prevWordSpan.dataset.originalText; // Revert to original text
+                                        prevTranslateBtn.classList.remove('active');
+                                    }
+                                }
+
+                                // Toggle current word's buttons
+                                const isHidden = wordButtonsDiv.style.display === 'none';
+                                wordButtonsDiv.style.display = isHidden ? 'flex' : 'none';
+
+                                // Set this word as active
+                                activeWordContainer = isHidden ? wordContainer : null;
+                            });
+                        }
+                    });
+
+                    translationDisplay.innerHTML = ''; // Clear translation when new subtitle appears
+                } else {
+                    subtitleDisplay.innerHTML = '';
+                    translationDisplay.innerHTML = ''; // Clear translation if no subtitle
+                }
+
+
+
+            }
+            // Event Listeners
+            playPauseBtn.addEventListener('click', () => {
+                if (isPlaying) {
+                    pause();
+                } else {
+                    play();
+                }
+            });
+
+            prevFrameBtn.addEventListener('click', () => {
+                pause(); // Pause playback when manually navigating
+                if (currentFrameIndex > 0) {
+                    currentFrameIndex--;
+                    renderFrame(frames[currentFrameIndex], movieMetadata.frames[currentFrameIndex]);
+                    updateProgressBar();
+                }
+            });
+
+            nextFrameBtn.addEventListener('click', () => {
+                pause(); // Pause playback when manually navigating
+                if (currentFrameIndex < frames.length - 1) {
+                    currentFrameIndex++;
+                    renderFrame(frames[currentFrameIndex], movieMetadata.frames[currentFrameIndex]);
+                    updateProgressBar();
+                }
+            });
+
+            listenSentenceBtn.addEventListener('click', () => {
+                if (currentSubtitleText) {
+                    speakWord(currentSubtitleText, 'en-US'); // Explicitly pass English language
+                }
+            });
+
+            translateBtn.addEventListener('click', () => {
+                if (currentSubtitleText) {
+                    fetchSentenceTranslation(currentSubtitleText);
+                } else {
+                    translationDisplay.textContent = 'No subtitle to translate.';
+                }
+            });
+
+            progressBar.addEventListener('input', (event) => {
+                const seekTime = parseInt(event.target.value, 10);
+                seek(seekTime);
+            });
+
+            window.addEventListener('resize', () => {
+                if (frames.length > 0) {
+                    renderFrame(frames[currentFrameIndex], movieMetadata.frames[currentFrameIndex]); // Re-render current frame on resize
+                }
+            });
+
+            
+            loadAllFrames();
+        });
+    </script>
+</body>
+</html>
