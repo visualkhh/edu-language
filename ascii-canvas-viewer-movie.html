@@ -336,7 +336,7 @@
 
             let currentSubtitleText = ''; // Variable to store current subtitle text
 
-            const movieBasePath = '../bb/';
+            const movieBasePath = encodeURI('비트코인 597,325개, 왜 샀는지 직접 물어봤습니다｜조던 피터슨 × 마이클 세일러/metadata.json');
             let movieMetadata = null;
             let frames = [];
             let currentFrameIndex = 0;
@@ -403,7 +403,7 @@
                 return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
             }
 
-            async function initializePlayer() {
+            async function loadAllFrames() {
                 try {
                     const metadataResponse = await fetch(`${movieBasePath}metadata.json`);
                     if (!metadataResponse.ok) {
@@ -412,15 +412,25 @@
                     movieMetadata = await metadataResponse.json();
                     console.log("Loaded movie metadata:", movieMetadata);
 
-                    frames = new Array(movieMetadata.frames.length).fill(null);
-
                     // Set total time display
                     totalTimeSpan.textContent = formatTime(movieMetadata.total_duration_ms || 0);
                     progressBar.max = movieMetadata.total_duration_ms || 0;
 
-                    if (movieMetadata.frames.length > 0) {
-                        await loadAndRenderFrame(currentFrameIndex);
-                        playPauseBtn.textContent = 'Play';
+                    const framePromises = movieMetadata.frames.map(async (frameMeta) => {
+                        const frameResponse = await fetch(`${movieBasePath}${frameMeta.path}`);
+                        if (!frameResponse.ok) {
+                            throw new Error(`HTTP error! status: ${frameResponse.status} for ${frameMeta.path}`);
+                        }
+                        return frameResponse.json();
+                    });
+                    frames = await Promise.all(framePromises);
+                    
+                    console.log(`Loaded ${frames.length} frames.`);
+                    if (frames.length > 0) {
+                        // Initial render of the first frame and subtitle
+                        renderFrame(frames[currentFrameIndex], movieMetadata.frames[currentFrameIndex]);
+                        updateProgressBar(); // Update progress bar for initial state
+                        playPauseBtn.textContent = 'Play'; // Set button text to Play initially
                     }
 
                 } catch (error) {
@@ -433,75 +443,35 @@
                 }
             }
 
-            async function loadFrame(frameIndex) {
-                if (frameIndex < 0 || frameIndex >= frames.length) {
-                    console.error(`Invalid frame index: ${frameIndex}`);
-                    return null;
-                }
-                if (frames[frameIndex]) {
-                    return frames[frameIndex];
-                }
-
-                try {
-                    const frameMeta = movieMetadata.frames[frameIndex];
-                    const frameResponse = await fetch(`${movieBasePath}${frameMeta.path}`);
-                    if (!frameResponse.ok) {
-                        throw new Error(`HTTP error! status: ${frameResponse.status} for ${frameMeta.path}`);
-                    }
-                    const frameData = await frameResponse.json();
-                    frames[frameIndex] = frameData;
-                    console.log(`Loaded frame ${frameIndex}.`);
-                    return frameData;
-                } catch (error) {
-                    console.error(`Failed to load frame ${frameIndex}:`, error);
-                    return null;
-                }
-            }
-
-            async function loadAndRenderFrame(frameIndex) {
-                const frameData = await loadFrame(frameIndex);
-                if (frameData) {
-                    renderFrame(frameData, movieMetadata.frames[frameIndex]);
-                    updateProgressBar();
-                }
-            }
-
             function play() {
                 if (isPlaying) return;
                 isPlaying = true;
                 playPauseBtn.textContent = 'Pause';
                 const interval = movieMetadata && movieMetadata.frame_interval_ms ? movieMetadata.frame_interval_ms : 200;
 
-                let expected = Date.now() + interval;
-                animationIntervalId = setTimeout(step, interval);
+                animationIntervalId = setInterval(() => {
+                    if (frames.length === 0) return;
 
-                async function step() {
-                    if (!isPlaying) return;
-
-                    let dt = Date.now() - expected; // the drift
-
-                    currentFrameIndex++;
-                    if (currentFrameIndex >= frames.length) {
-                        pause();
-                        seek(0);
-                        return;
+                    currentFrameIndex = (currentFrameIndex + 1) % frames.length;
+                    // If we looped back to the start, stop playing unless explicitly told to loop
+                    if (currentFrameIndex === 0) {
+                        pause(); // Pause at the end of the video
+                        seek(0); // Reset to the beginning
+                        return; // Exit this interval tick
                     }
-
-                    await loadAndRenderFrame(currentFrameIndex);
-
-                    expected += interval;
-                    animationIntervalId = setTimeout(step, Math.max(0, interval - dt)); // take drift into account
-                }
+                    renderFrame(frames[currentFrameIndex], movieMetadata.frames[currentFrameIndex]);
+                    updateProgressBar();
+                }, interval);
             }
 
             function pause() {
                 if (!isPlaying) return;
                 isPlaying = false;
                 playPauseBtn.textContent = 'Play';
-                clearTimeout(animationIntervalId);
+                clearInterval(animationIntervalId);
             }
 
-            async function seek(timeMs) {
+            function seek(timeMs) {
                 // Find the closest frame to the given timeMs
                 let closestFrameIndex = 0;
                 let minDiff = Infinity;
@@ -515,7 +485,8 @@
                     }
                 }
                 currentFrameIndex = closestFrameIndex;
-                await loadAndRenderFrame(currentFrameIndex);
+                renderFrame(frames[currentFrameIndex], movieMetadata.frames[currentFrameIndex]);
+                updateProgressBar();
             }
 
             function updateProgressBar() {
@@ -714,19 +685,21 @@
                 }
             });
 
-            prevFrameBtn.addEventListener('click', async () => {
+            prevFrameBtn.addEventListener('click', () => {
                 pause(); // Pause playback when manually navigating
                 if (currentFrameIndex > 0) {
                     currentFrameIndex--;
-                    await loadAndRenderFrame(currentFrameIndex);
+                    renderFrame(frames[currentFrameIndex], movieMetadata.frames[currentFrameIndex]);
+                    updateProgressBar();
                 }
             });
 
-            nextFrameBtn.addEventListener('click', async () => {
+            nextFrameBtn.addEventListener('click', () => {
                 pause(); // Pause playback when manually navigating
-                if (currentFrameIndex < movieMetadata.frames.length - 1) {
+                if (currentFrameIndex < frames.length - 1) {
                     currentFrameIndex++;
-                    await loadAndRenderFrame(currentFrameIndex);
+                    renderFrame(frames[currentFrameIndex], movieMetadata.frames[currentFrameIndex]);
+                    updateProgressBar();
                 }
             });
 
@@ -746,18 +719,17 @@
 
             progressBar.addEventListener('input', (event) => {
                 const seekTime = parseInt(event.target.value, 10);
-                pause();
                 seek(seekTime);
             });
 
             window.addEventListener('resize', () => {
-                if (frames[currentFrameIndex]) {
+                if (frames.length > 0) {
                     renderFrame(frames[currentFrameIndex], movieMetadata.frames[currentFrameIndex]); // Re-render current frame on resize
                 }
             });
 
             
-            initializePlayer();
+            loadAllFrames();
         });
     </script>
 </body>
